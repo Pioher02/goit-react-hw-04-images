@@ -1,31 +1,18 @@
-import * as basicLightbox from 'basiclightbox';
+import { createPortal } from 'react-dom';
+import Modal from './Modal';
 const { Component } = require('react');
 
 class ImageGallery extends Component {
-
-  modal(img) {
-    const instance = basicLightbox.create(`
-      <div className="overlay">
-        <div className="modal">
-          <img src=${img} />
-        </div>
-      </div>
-    `);
-
-    function closeModal(e) {
-      if (e.key === 'Escape') {
-        instance.close();
-        window.removeEventListener('keydown', closeModal);
-      }
-    }
-
-    instance.show();
-    window.addEventListener('keydown', closeModal);
-    //
-  }
+  static defaultProps = { showImages: [] };
+  state = {
+    showModal: false,
+    largeImage: '',
+  };
 
   render() {
     const { showImages } = this.props;
+    const { showModal } = this.state;
+
     return (
       <ul className="gallery">
         {showImages.map(showImage => (
@@ -34,10 +21,21 @@ class ImageGallery extends Component {
               src={showImage.webformatURL}
               alt={showImage.id}
               className="galleryItem-image"
-              onClick={() => this.modal(showImage.largeImageURL)}
+              onClick={() => {
+                this.setState({ showModal: true });
+                this.setState({ largeImage: showImage.largeImageURL });
+              }}
             />
           </li>
         ))}
+        {showModal &&
+          createPortal(
+            <Modal
+              largeImage={this.state.largeImage}
+              onClosed={() => this.setState({ showModal: false })}
+            />,
+            document.body
+          )}
       </ul>
     );
   }
