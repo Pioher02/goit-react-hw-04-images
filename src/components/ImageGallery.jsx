@@ -1,44 +1,41 @@
 import { createPortal } from 'react-dom';
+import propTypes from 'prop-types';
 import Modal from './Modal';
-const { Component } = require('react');
+import { useState } from 'react';
 
-class ImageGallery extends Component {
-  static defaultProps = { showImages: [] };
-  state = {
-    showModal: false,
-    largeImage: '',
-  };
+const ImageGallery = ({ showImages }) => {
+  const [showModal, setShowmodal] = useState(false);
+  const [largeImage, setLargeimage] = useState('');
 
-  render() {
-    const { showImages } = this.props;
-    const { showModal } = this.state;
+  return (
+    <ul className="gallery">
+      {showImages.map(showImage => (
+        <li key={showImage.id} className="galleryItem">
+          <img
+            src={showImage.webformatURL}
+            alt={showImage.id}
+            className="galleryItem-image"
+            onClick={() => {
+              setShowmodal(true);
+              setLargeimage(showImage.largeImageURL);
+            }}
+          />
+        </li>
+      ))}
+      {showModal &&
+        createPortal(
+          <Modal
+            largeImage={largeImage}
+            onClosed={() => setShowmodal(false)}
+          />,
+          document.body
+        )}
+    </ul>
+  );
+};
 
-    return (
-      <ul className="gallery">
-        {showImages.map(showImage => (
-          <li key={showImage.id} className="galleryItem">
-            <img
-              src={showImage.webformatURL}
-              alt={showImage.id}
-              className="galleryItem-image"
-              onClick={() => {
-                this.setState({ showModal: true });
-                this.setState({ largeImage: showImage.largeImageURL });
-              }}
-            />
-          </li>
-        ))}
-        {showModal &&
-          createPortal(
-            <Modal
-              largeImage={this.state.largeImage}
-              onClosed={() => this.setState({ showModal: false })}
-            />,
-            document.body
-          )}
-      </ul>
-    );
-  }
-}
+ImageGallery.propTypes = {
+  showImages: propTypes.array.isRequired,
+};
 
 export default ImageGallery;

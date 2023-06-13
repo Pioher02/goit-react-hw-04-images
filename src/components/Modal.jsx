@@ -1,7 +1,6 @@
 import propTypes from 'prop-types';
 
-function Modal({ largeImage, onClosed }) {
-
+const Modal = ({ largeImage, onClosed }) => {
   window.addEventListener('keydown', closeModal);
 
   function closeModal(e) {
@@ -18,7 +17,7 @@ function Modal({ largeImage, onClosed }) {
       </div>
     </div>
   );
-}
+};
 
 Modal.propTypes = {
   largeImage: propTypes.string.isRequired,
