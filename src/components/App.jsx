@@ -1,11 +1,12 @@
-import { Component } from 'react';
-import Searchbar from './Searchbar';
-import axios from 'axios';
-import ImageGallery from './ImageGallery';
-import './Styles.css';
 import { MagnifyingGlass } from 'react-loader-spinner';
+import ImageGallery from './ImageGallery';
+import Searchbar from './Searchbar';
 import Notiflix from 'notiflix';
+import axios from 'axios';
+import './Styles.css';
+import { useState } from 'react';
 
+//Obtiene info de la api
 const fetchImages = async (search, page) => {
   const { data } = await axios.get(
     `https://pixabay.com/api/?key=36466872-8cd7f36167ccc00ecda2aa8fc&q=${search}&page=${page}&image_type=photo&orientation=horizontal&per_page=12`
@@ -15,29 +16,30 @@ const fetchImages = async (search, page) => {
 
 let page = 1;
 
-class App extends Component {
-  state = {
-    images: [],
-    loading: false,
-  };
+const App = () => {
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  searchWord = evt => {
+  //Guarda la palabra del formulario
+  const searchWord = evt => {
     evt.preventDefault();
     const form = evt.currentTarget;
     const search = form.elements.search.value;
     page = 1;
-    this.setState({ images: [] });
-    this.searchImages(search, page);
+    setImages([]);
+    searchImages(search, page);
   };
 
-  loadMore(evt) {
+  //Carga más imagenes al dar clic en el boton
+  const loadMore = evt => {
     page = page + 1;
-    const search = this.state.images[page].name;
-    this.searchImages(search, page);
-  }
+    const search = images[page].name;
+    searchImages(search, page);
+  };
 
-  searchImages = async (search, page) => {
-    this.setState({ loading: true });
+  //Busca las imagenes de acuerdo a la palabra
+  const searchImages = async (search, page) => {
+    setLoading(true);
     try {
       const request = await fetchImages(search, page);
       const newImages = request.map(function (image) {
@@ -49,16 +51,14 @@ class App extends Component {
         return nImg;
       });
       if (newImages.length > 0) {
-        this.setState(({ images }) => ({
-          images: [...images, ...newImages],
-          loading: false,
-        }));
+        setImages([...images, ...newImages]);
+        setLoading(false);
       } else {
         if (page === 1) {
-          this.setState({ loading: false });
+          setLoading(false);
           Notiflix.Notify.failure('Image not found, search again');
         } else {
-          this.setState({ loading: false });
+          setLoading(false);
           Notiflix.Notify.warning('No more image found');
         }
       }
@@ -67,34 +67,32 @@ class App extends Component {
     }
   };
 
-  render() {
-    return (
-      <div>
-        <Searchbar searchWord={this.searchWord} />
-        {this.state.loading ? (
-          <MagnifyingGlass
-            visible={true}
-            height="80"
-            width="80"
-            ariaLabel="MagnifyingGlass-loading"
-            wrapperStyle={{}}
-            wrapperClass="MagnifyingGlass-wrapper"
-            glassColor="#c0efff"
-            color="#e15b64"
-          />
-        ) : (
-          <ImageGallery showImages={this.state.images} />
+  return (
+    <div>
+      <Searchbar searchWord={searchWord} />
+      {loading ? (
+        <MagnifyingGlass
+          visible={true}
+          height="80"
+          width="80"
+          ariaLabel="MagnifyingGlass-loading"
+          wrapperStyle={{}}
+          wrapperClass="MagnifyingGlass-wrapper"
+          glassColor="#c0efff"
+          color="#e15b64"
+        />
+      ) : (
+        <ImageGallery showImages={images} />
+      )}
+      <div className="container">
+        {images.length > 0 && (
+          <button className="loadMore" onClick={evt => loadMore(evt)}>
+            Load More
+          </button>
         )}
-        <div className="container">
-          {this.state.images.length > 0 && (
-            <button className="loadMore" onClick={evt => this.loadMore(evt)}>
-              Load More
-            </button>
-          )}
-        </div>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 export default App;
