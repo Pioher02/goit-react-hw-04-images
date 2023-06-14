@@ -11,6 +11,7 @@ const fetchImages = async (search, page) => {
   const { data } = await axios.get(
     `https://pixabay.com/api/?key=36466872-8cd7f36167ccc00ecda2aa8fc&q=${search}&page=${page}&image_type=photo&orientation=horizontal&per_page=12`
   );
+
   return data.hits;
 };
 
@@ -52,7 +53,9 @@ const App = () => {
       if (newImages.length > 0) {
         if (newSearch) {
           setImages([...newImages]);
-        } else {setImages([...images, ...newImages]);}
+        } else {
+          setImages(prevItems => [...prevItems, ...newImages]);
+        }
         setLoading(false);
       } else {
         if (page === 1) {
@@ -72,7 +75,8 @@ const App = () => {
   return (
     <div>
       <Searchbar searchWord={searchWord} />
-      {loading ? (
+      <ImageGallery showImages={images} />
+      {loading && (
         <MagnifyingGlass
           visible={true}
           height="80"
@@ -83,8 +87,6 @@ const App = () => {
           glassColor="#c0efff"
           color="#e15b64"
         />
-      ) : (
-        <ImageGallery showImages={images} />
       )}
       <div className="container">
         {images.length > 0 && (
